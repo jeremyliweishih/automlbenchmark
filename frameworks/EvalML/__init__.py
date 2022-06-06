@@ -10,10 +10,17 @@ def setup(*args, **kwargs):
 def run(dataset: Dataset, config: TaskConfig):
     from frameworks.shared.caller import run_in_venv
 
+    X_train, X_test = dataset.train.X, dataset.test.X
+    y_train, y_test = dataset.train.y, dataset.test.y
     data = dict(
-        train=dict(path=dataset.train.path),
-        test=dict(path=dataset.test.path),
-        target=dict(index=dataset.target.index)
+        train=dict(
+            X=X_train,
+            y=y_train
+        ),
+        test=dict(
+            X=X_test,
+            y=y_test
+        )
     )
 
     return run_in_venv(__file__, "exec.py",

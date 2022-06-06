@@ -19,7 +19,8 @@ log = logging.getLogger(__name__)
 from evalml import AutoMLSearch, __version__
 from evalml.problem_types import detect_problem_type
 from frameworks.shared.callee import (call_run, output_subdir, result,
-                                      save_metadata, utils)
+                                      save_metadata)
+import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +32,9 @@ def run(dataset, config):
     is_classification = config.type == 'classification'
     
     X_train = dataset.train.X
-    y_train = dataset.train.y[:, 0]
+    y_train = dataset.train.y.iloc[:, 0]
+    
+
     problem_type = detect_problem_type(y_train)
 
     metrics_mapping = None
@@ -70,19 +73,17 @@ def run(dataset, config):
     log.info('Running EvalML with a maximum time of %ss on %s cores, optimizing %s.',
              config.max_runtime_seconds, n_jobs, scoring_metric)
 
-    automl = AutoMLSearch(problem_type=problem_type, 
+    automl = AutoMLSearch(
+                          X_train=X_train,
+                          y_train=y_train,
+                          problem_type=problem_type, 
                           objective=scoring_metric,
                           max_time=config.max_runtime_seconds, 
-                          random_state=config.seed, 
+                          random_seed=config.seed, 
                           **training_params)
 
-    try:
-        with utils.Timer() as training:
-            automl.search(X_train, y_train)
-    except ValueError: # Catch instances with data check errors and rerun.
-        with utils.Timer() as training:
-            log.info('Data check raised, rerunning with data checks disabled.')
-            automl.search(X_train, y_train, data_checks='disabled')
+    with Timer() as training:
+        automl.search()
 
     log.info('Predicting on the test set.')
     X_test = dataset.test.X
@@ -91,7 +92,7 @@ def run(dataset, config):
     best_pipeline = automl.best_pipeline
     best_pipeline.fit(X_train, y_train)
     
-    with utils.Timer() as predict:
+    with Timer() as predict:
         predictions = best_pipeline.predict(X_test)
     
     probabilities = best_pipeline.predict_proba(X_test) if is_classification else None
