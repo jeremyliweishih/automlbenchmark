@@ -66,6 +66,12 @@ autoxgboost:
   project: https://github.com/ja-thomas/autoxgboost
   refs: [https://arxiv.org/abs/1807.03873v2]
 
+evalml:
+  version: 'latest'
+  description: |
+    EvalML is an AutoML library which builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.
+  project: https://github.com/alteryx/evalml
+
 flaml:
   version: 'stable'
   description: |
