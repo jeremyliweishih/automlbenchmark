@@ -101,7 +101,7 @@ def run(dataset, config):
                   predictions=predictions,
                   truth=y_test,
                   probabilities=probabilities,
-                  target_is_encoded=is_classification,
+                  target_is_encoded=False,
                   models_count=len(automl.full_rankings),
                   training_duration=training.duration,
                   predict_duration=predict.duration)
